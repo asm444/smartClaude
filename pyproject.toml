@@ -1,0 +1,27 @@
+[project]
+name = "minitela"
+version = "0.1.0"
+description = "Cliente e daemon para a Minitela do notebook Positivo Vision R15M"
+requires-python = ">=3.11"
+license = "MIT"
+dependencies = ["pillow>=10"]
+
+[project.optional-dependencies]
+dev = ["pytest>=8"]
+
+[build-system]
+requires = ["setuptools>=68"]
+build-backend = "setuptools.build_meta"
+
+[tool.setuptools.packages.find]
+where = ["src"]
+
+[tool.pytest.ini_options]
+testpaths = ["tests"]
+# importmode=importlib mantém o cwd fora do sys.path: sem isso, o minitela.py
+# legado da raiz sombreia o pacote src/minitela/ até a F7 deletá-lo.
+addopts = "-m 'not hardware' --import-mode=importlib"
+consider_namespace_packages = true
+markers = [
+    "hardware: exige a Minitela conectada em /dev/ttyACM0 (rodar com: pytest -m hardware)",
+]

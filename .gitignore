@@ -16,6 +16,10 @@ ACF_out/
 __pycache__/
 *.py[cod]
 .venv/
+*.egg-info/
+/build/
+/dist/
+.pytest_cache/
 
 # Planejamento local (não é entregável do repo)
 plans/

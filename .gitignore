@@ -1,13 +1,11 @@
 # Material de terceiros — NUNCA versionar (IP da Positivo/Sigma).
 # Como obter/regerar: scripts/bootstrap-vendor.md
 /minitela-oficial/
-/vendor/
 /sidecar/
 /sidecar-src/
 
-# Artefatos de build regeráveis
+# Artefatos de build regeráveis (o .acf sai do compilador AHMI; ver bootstrap)
 *.acf
-!assets/acf/*.acf
 Gen/
 ACF_out/
 *.o
@@ -18,9 +16,6 @@ ACF_out/
 __pycache__/
 *.py[cod]
 .venv/
-*.egg-info/
-/build/
-/dist/
 
 # Planejamento local (não é entregável do repo)
 plans/

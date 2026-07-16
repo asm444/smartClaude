@@ -39,9 +39,10 @@ Ela **não se estende** a material de terceiros, que não é redistribuído aqui
   Não é vendorizado; `patches/sidecar/` contém apenas as nossas modificações,
   aplicáveis sobre o upstream.
 
-- **Sprites do Clawd** (`assets/sprites/`) — derivados de
+- **Sprites do Clawd** — derivados de
   https://github.com/MrSchrodingers/claude-usage-widget, MIT,
-  © 2026 Claude Usage Widget Contributors. Ver `assets/sprites/LICENSE`.
+  © 2026 Claude Usage Widget Contributors. Não são vendorizados neste repo; o
+  `render_bichinhos.py` os lê da instalação local do widget.
 
 O trabalho de engenharia reversa documentado aqui descreve comportamento
 observado para fins de interoperabilidade; não contém nem redistribui código

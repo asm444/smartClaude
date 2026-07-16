@@ -147,11 +147,12 @@ def run():
 
 def run_ciclo_gif():
     """Modo --ciclo-gif: 5 estados animados, um por vez na página 5. Cada toque
-    sobe o .acf do próximo estado (~11s de upload). Requer gerar_5_gifs.sh antes."""
+    sobe o .acf do próximo estado (~11s de upload).
+    Gere os .acf antes com: minitela build <conjunto> -o <saida.acf>"""
     import subprocess
     faltando = [s for s in CICLO_GIF_STATES if not os.path.exists(_acf_for(s))]
     if faltando:
-        raise SystemExit("faltam .acf: rode ./gerar_5_gifs.sh primeiro "
+        raise SystemExit("faltam .acf: gere com `minitela build` primeiro "
                          f"(ausentes: {', '.join(faltando)})")
     idx = 0
     dev, f = _open_keyboard()

@@ -56,8 +56,8 @@ pipeline de build a partir do material do item 2).
 ## 3. Sprites do Clawd
 
 MIT, © 2026 Claude Usage Widget Contributors. **Não vendorizados aqui**: o
-`render_bichinhos.py` lê os sprites da instalação local do widget, no caminho
-`~/projects/claude-usage-widget/plasmoid/contents/icons/`.
+os sprites já estão vendorizados em `src/minitela/render/sprites/` (MIT, com
+atribuição). Você não precisa do widget para gerar os bichinhos.
 
 ```bash
 git clone https://github.com/MrSchrodingers/claude-usage-widget.git ~/projects/claude-usage-widget

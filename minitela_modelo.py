@@ -11,7 +11,7 @@ muda.
   (haiku/outro -> fogo, como fallback)
 
 REQUER: o `clawd-anim.acf` (3 Clawds DIFERENTES nas paginas 5/6/7) ja subido no
-hardware. Rode uma vez: ./montar_clawd_gif.sh --no-upload nao; use o upload do
+hardware. Gere uma vez com: minitela build normal -o <saida.acf>; use o upload do
 clawd-anim.acf. Este script so troca de pagina (instantaneo), nao sobe .acf.
 
 Uso:

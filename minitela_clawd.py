@@ -18,7 +18,7 @@ ESTADOS (cada um = um .acf com 3 Clawds nas paginas 5/6/7):
   automatico (modelo, ou alerta se ainda ativo).
 
 Precisa de ROOT (le a tecla em /dev/input/event3). Requer clawd-anim.acf e
-clawd-alerta.acf ja gerados (gerar_conjunto.sh).
+clawd-alerta.acf ja gerados (minitela build normal|alerta -o <saida>).
 
 Uso:
   sudo python3 minitela_clawd.py

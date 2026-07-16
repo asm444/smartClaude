@@ -12,24 +12,26 @@ aperta.
 
 ## Os bichinhos
 
-Conforme o modelo em uso — troca instantânea, só um registrador serial:
+**Pelo modelo em uso** — troca instantânea, só um registrador serial:
 
-| <img src="docs/img/clawd-genius.gif" width="140"> | <img src="docs/img/clawd-smart.gif" width="140"> | <img src="docs/img/clawd-dumb.gif" width="140"> |
-|:---:|:---:|:---:|
-| **opus** — gênio | **sonnet** — esperto | **fable** — no fogo |
-| página 6 | página 7 | página 5 |
+![opus, o Clawd gênio de coroa](docs/img/clawd-genius.gif)
+![sonnet, o Clawd esperto com livro e café](docs/img/clawd-smart.gif)
+![fable, o Clawd no fogo](docs/img/clawd-dumb.gif)
 
-Conforme o consumo de tokens — o conjunto inteiro troca (re-upload, ~15s):
+`opus` → gênio (página 6) · `sonnet` → esperto (página 7) · `fable` → fogo (página 5)
 
-| <img src="docs/img/clawd-slow.gif" width="140"> | <img src="docs/img/clawd-braindead.gif" width="140"> |
-|:---:|:---:|
-| **70–90%** — chuva | **≥ 90%** — fantasminha |
+**Pelo consumo de tokens** — o conjunto inteiro troca (re-upload, ~15s):
+
+![70-90%, o Clawd na chuva](docs/img/clawd-slow.gif)
+![90% ou mais, o fantasminha na lápide](docs/img/clawd-braindead.gif)
+
+70–90% → chuva · ≥ 90% → fantasminha
 
 A tecla física "Minitela" cicla os três bichinhos do conjunto ativo. Prioridade:
 tecla (override de 20s) > alerta > modelo.
 
-> Os GIFs acima são o render de verdade — a mesma função que gera o que vai para
-> o display. Reproduza com `minitela build normal -o clawd.acf`.
+Os GIFs acima são o render de verdade — a mesma função que gera o que vai para o
+display. Reproduza com `minitela build normal -o clawd.acf`.
 
 ## Como funciona
 

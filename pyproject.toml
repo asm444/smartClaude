@@ -19,6 +19,9 @@ build-backend = "setuptools.build_meta"
 [tool.setuptools.packages.find]
 where = ["src"]
 
+[tool.setuptools.package-data]
+"minitela.render" = ["sprites/*.png", "sprites/LICENSE"]
+
 [tool.pytest.ini_options]
 testpaths = ["tests"]
 # importmode=importlib mantém o cwd fora do sys.path: sem isso, o minitela.py

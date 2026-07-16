@@ -41,6 +41,18 @@ def _cmd_handshake(args) -> int:
     return 0 if ok else 1
 
 
+def _cmd_build(args) -> int:
+    from .build import CONJUNTOS, montar_conjunto
+
+    try:
+        acf = montar_conjunto(args.conjunto, args.saida, args.file_zip)
+    except (FileNotFoundError, ValueError, RuntimeError) as erro:
+        print(f"erro: {erro}", file=sys.stderr)
+        return 1
+    print(f"{acf} ({acf.stat().st_size} bytes)")
+    return 0
+
+
 def construir_parser() -> argparse.ArgumentParser:
     p = argparse.ArgumentParser(prog="minitela", description=__doc__)
     p.add_argument("--device", default=DEVICE_PADRAO, help="porta serial")
@@ -56,6 +68,12 @@ def construir_parser() -> argparse.ArgumentParser:
 
     h = sub.add_parser("handshake", help="pergunta se o dispositivo responde")
     h.set_defaults(func=_cmd_handshake)
+
+    b = sub.add_parser("build", help="gera o .acf de um conjunto de bichinhos")
+    b.add_argument("conjunto", choices=["normal", "alerta"])
+    b.add_argument("-o", "--saida", required=True, help="caminho do .acf")
+    b.add_argument("--file-zip", default=None, help="projeto AHMI de fábrica")
+    b.set_defaults(func=_cmd_build)
 
     return p
 

@@ -1,9 +1,9 @@
 # Material de terceiros — NUNCA versionar (IP da Positivo/Sigma).
 # Como obter/regerar: scripts/bootstrap-vendor.md
-minitela-oficial/
-vendor/
-sidecar/
-sidecar-src/
+/minitela-oficial/
+/vendor/
+/sidecar/
+/sidecar-src/
 
 # Artefatos de build regeráveis
 *.acf

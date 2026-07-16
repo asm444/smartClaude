@@ -1,0 +1,35 @@
+# 0003-fix-ack-escrita.patch
+#
+# Base upstream: FreyreCorona/SideCar @ d356c2b
+# Aplicar com:   git apply patches/sidecar/*.patch
+#
+# Bug 3: ACK de escrita tem layout diferente do de leitura (functionCode
+# 2 vs 0). Valida o formato estrito so na leitura; escrita = confirmacao.
+#
+# Contexto completo: docs/historico/fork-sidecar-bugs.md
+
+diff --git a/core/register.go b/core/register.go
+index fe555c6..14ca186 100644
+--- a/core/register.go
++++ b/core/register.go
+@@ -185,13 +185,13 @@ func parseNumRegResponse(content []byte) (map[uint16]uint32, error) {
+ 	regNum := int(header&0x0F) + 1 // regNum in the frame is N-1
+ 	data := content[1:]
+ 
+-	if functionCode != 0 {
+-		return nil, fmt.Errorf("SET_REGISTER_RESPONSE: unexpected functionCode %d (expected 0)", functionCode)
+-	}
+-
+-	// Each register: regId(2) + value(4) = 6 bytes
+-	if len(data) < regNum*6 {
+-		return nil, fmt.Errorf("SET_REGISTER_RESPONSE: insufficient data: have %d, need %d", len(data), regNum*6)
++	// Only the read-register ack (functionCode 0, observed on real hardware)
++	// echoes back regId(2)+value(4) per register. The write-register ack
++	// uses a shorter, differently-shaped payload on this firmware revision
++	// that was never fully reverse-engineered — treat it as a bare
++	// success acknowledgement (no values to report) instead of failing.
++	if functionCode != 0 || len(data) < regNum*6 {
++		return map[uint16]uint32{}, nil
+ 	}
+ 
+ 	result := make(map[uint16]uint32, regNum)

@@ -1,0 +1,108 @@
+# 0004-add-show-image.patch
+#
+# Base upstream: FreyreCorona/SideCar @ d356c2b
+# Aplicar com:   git apply patches/sidecar/*.patch
+#
+# Novo: -cmd show-image -file <PNG 240x240> — decodifica, converte para
+# RGB565 LE e sobe como FileTypeTexture.
+#
+# Contexto completo: docs/historico/fork-sidecar-bugs.md
+
+diff --git a/cli.go b/cli.go
+index bab39be..f5aee98 100644
+--- a/cli.go
++++ b/cli.go
+@@ -5,6 +5,8 @@ import (
+ 	"encoding/hex"
+ 	"flag"
+ 	"fmt"
++	"image"
++	_ "image/png"
+ 	"io"
+ 	"os"
+ 	"strconv"
+@@ -79,6 +81,38 @@ func runCLI(args []string, defaultLog io.Writer) error {
+ 	case "reboot":
+ 		return dev.Reboot()
+ 
++	case "show-image":
++		if *filePath == "" {
++			return fmt.Errorf("show-image requires -file <path to 240x240 PNG>")
++		}
++
++		rgb565, err := loadRGB565PNG(*filePath)
++		if err != nil {
++			return fmt.Errorf("cannot load image: %w", err)
++		}
++
++		acf, err := core.BuildACF(rgb565)
++		if err != nil {
++			return fmt.Errorf("cannot build ACF: %w", err)
++		}
++
++		cfg := core.UploadConfig{
++			OnProgress: func(p core.UploadProgress) {
++				fmt.Printf("\r  uploading... %d%%", p.Percent)
++				if p.Percent == 100 {
++					fmt.Println()
++				}
++			},
++		}
++
++		ctx := context.Background()
++		if err := dev.UploadFile(ctx, acf, core.FileTypeTexture, cfg); err != nil {
++			return fmt.Errorf("upload failed: %w", err)
++		}
++
++		fmt.Println("done: image shown on minitela")
++		return nil
++
+ 	case "upload":
+ 		if *filePath == "" {
+ 			return fmt.Errorf("upload requires -file <path>")
+@@ -222,6 +256,45 @@ func connect(device string, baud int) (*core.Device, error) {
+ 	return dev, nil
+ }
+ 
++// loadRGB565PNG decodes a PNG file and converts it to the 240x240 RGB565
++// little-endian pixel format expected by core.BuildACF. The source image
++// must already be exactly 240x240 (the caller is expected to have resized
++// it) so this stays a pure format conversion, not a resampler.
++func loadRGB565PNG(path string) ([]byte, error) {
++	f, err := os.Open(path)
++	if err != nil {
++		return nil, err
++	}
++	defer f.Close()
++
++	img, _, err := image.Decode(f)
++	if err != nil {
++		return nil, fmt.Errorf("decode PNG: %w", err)
++	}
++
++	b := img.Bounds()
++	if b.Dx() != 240 || b.Dy() != 240 {
++		return nil, fmt.Errorf("image must be exactly 240x240, got %dx%d", b.Dx(), b.Dy())
++	}
++
++	out := make([]byte, core.ImageDataSize)
++	i := 0
++	for y := b.Min.Y; y < b.Max.Y; y++ {
++		for x := b.Min.X; x < b.Max.X; x++ {
++			r, g, bl, _ := img.At(x, y).RGBA()
++			// RGBA() returns 16-bit-per-channel values; take the high byte.
++			r5 := uint16(r>>8) >> 3
++			g6 := uint16(g>>8) >> 2
++			b5 := uint16(bl>>8) >> 3
++			px := (r5 << 11) | (g6 << 5) | b5
++			out[i] = byte(px)
++			out[i+1] = byte(px >> 8)
++			i += 2
++		}
++	}
++	return out, nil
++}
++
+ func parseRegs(input string) ([]core.NumRegister, error) {
+ 	parts := strings.Split(input, ",")
+ 	regs := make([]core.NumRegister, 0, len(parts))

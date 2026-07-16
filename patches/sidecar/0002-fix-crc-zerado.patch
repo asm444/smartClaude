@@ -1,0 +1,29 @@
+# 0002-fix-crc-zerado.patch
+#
+# Base upstream: FreyreCorona/SideCar @ d356c2b
+# Aplicar com:   git apply patches/sidecar/*.patch
+#
+# Bug 2: validacao de CRC incorreta — o firmware ativa o bit de CRC mas
+# manda o campo sempre zerado; comparar contra um CRC real dava mismatch e
+# ReadResponse descartava tudo ate o timeout (parecia trave).
+#
+# Contexto completo: docs/historico/fork-sidecar-bugs.md
+
+diff --git a/core/command.go b/core/command.go
+index 1aff36d..9b090fe 100644
+--- a/core/command.go
++++ b/core/command.go
+@@ -183,7 +183,12 @@ func ParseFrame(raw []byte) (*Response, error) {
+ 		crcPayload := raw[2 : 6+contentLen] // controlFlag + cmdType + content
+ 		expected := binary.BigEndian.Uint16(raw[6+contentLen : 8+contentLen])
+ 		actual := crc16(crcPayload)
+-		crcOK = expected == actual
++		// Observed on real hardware: responses set the CRC-enabled bit but
++		// ship a zeroed CRC field (the device does not compute one for its
++		// own responses). Treat a zero field as "no CRC to check" instead
++		// of a mismatch, or every CRC-enabled response gets silently
++		// discarded until ExpectResponse times out.
++		crcOK = expected == 0 || expected == actual
+ 	}
+ 
+ 	endOffset := 6 + contentLen + 2

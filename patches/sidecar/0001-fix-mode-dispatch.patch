@@ -1,0 +1,67 @@
+# 0001-fix-mode-dispatch.patch
+#
+# Base upstream: FreyreCorona/SideCar @ d356c2b
+# Aplicar com:   git apply patches/sidecar/*.patch
+#
+# Bug 1: dispatch de -mode quebrado — o FlagSet do sub-parser recebia
+# os.Args cru (com o -mode ja consumido) e abortava com 'flag provided but
+# not defined: -mode'. Torna -mode daemon/-mode cli utilizaveis.
+#
+# Contexto completo: docs/historico/fork-sidecar-bugs.md
+
+diff --git a/main.go b/main.go
+index 85c7a1d..4a3f849 100644
+--- a/main.go
++++ b/main.go
+@@ -21,33 +21,34 @@ import (
+ //	sidecar -mode daemon       → daemon
+ //	sidecar -mode daemon -interval 3s
+ //	sidecar -mode cli -cmd on  → CLI
+-func main() {
+-	mode := flag.String("mode", "ui", "runtime mode: ui | daemon | cli")
+-	logFile := flag.String("log", "", "path to log file (default: stdout/stderr)")
+-
+-	flag.Usage = func() {
+-		fmt.Fprintf(os.Stderr, "Usage of sidecar:\n")
+-		flag.PrintDefaults()
+-		fmt.Fprintf(os.Stderr, "\nUse \"sidecar -mode cli -help\" for CLI commands help.\n")
++// splitMode extracts a leading "-mode <value>" pair from args (if present),
++// returning the mode (default "ui") and the remaining args with that pair
++// removed, so per-mode FlagSets never see the already-consumed -mode flag.
++func splitMode(args []string) (mode string, rest []string) {
++	mode = "ui"
++	rest = args
++	if len(args) >= 2 && (args[0] == "-mode" || args[0] == "--mode") {
++		mode = args[1]
++		rest = args[2:]
+ 	}
++	return mode, rest
++}
+ 
+-	flag.Parse()
++func main() {
++	mode, rest := splitMode(os.Args[1:])
+ 
+-	logOut := setupLogging(*logFile)
+-	if logOut != os.Stdout && logOut != os.Stderr {
+-		defer logOut.(io.Closer).Close()
+-	}
++	logOut := setupLogging("")
+ 
+ 	var err error
+-	switch *mode {
++	switch mode {
+ 	case "daemon":
+-		err = runDaemonMode(os.Args, logOut)
++		err = runDaemonMode(append([]string{os.Args[0]}, rest...), logOut)
+ 	case "ui":
+ 		err = runUI(logOut)
+ 	case "cli":
+-		err = runCLI(os.Args, logOut)
++		err = runCLI(append([]string{os.Args[0]}, rest...), logOut)
+ 	default:
+-		err = fmt.Errorf("unknown mode: %s", *mode)
++		err = fmt.Errorf("unknown mode: %s", mode)
+ 	}
+ 
+ 	if err != nil {

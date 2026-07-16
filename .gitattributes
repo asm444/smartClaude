@@ -1,0 +1,5 @@
+* text=auto eol=lf
+
+assets/acf/*.acf filter=lfs diff=lfs merge=lfs -text
+src/minitela/render/sprites/*.png binary
+patches/sidecar/*.patch -text

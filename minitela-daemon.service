@@ -1,0 +1,23 @@
+[Unit]
+Description=Minitela Clawd daemon — tecla fisica cicla as telas da Minitela
+# so tenta rodar quando o device serial da Minitela existir
+After=dev-ttyACM0.device
+Wants=dev-ttyACM0.device
+# limite de reinicio (estas chaves pertencem a [Unit], nao a [Service])
+StartLimitIntervalSec=60
+StartLimitBurst=5
+
+[Service]
+Type=simple
+# roda como root: le /dev/input/event* (grupo input) e /dev/ttyACM0 (dialout) sem
+# depender de grupos do usuario. Sem cwd, o import de minitela.py precisa deste dir:
+WorkingDirectory=/home/asm/telinha
+# minitela_clawd.py: a tela segue o MODELO em uso (opus=genio/sonnet=smart/fable=fogo);
+# a tecla F16 da override manual temporario. Requer clawd-anim.acf ja no hardware.
+ExecStart=/usr/bin/python3 /home/asm/telinha/minitela_clawd.py
+# reinicia se cair (ex: replug do device), mas com backoff pra nao virar loop quente
+Restart=on-failure
+RestartSec=5
+
+[Install]
+WantedBy=multi-user.target

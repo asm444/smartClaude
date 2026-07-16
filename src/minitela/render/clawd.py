@@ -12,17 +12,22 @@ from PIL import Image
 from .comum import FUNDO_CLARO, TAMANHO
 
 FRAMES_POR_ESTADO = 6
-_TAM_OVERLAY = 200
-_DESLOCAMENTO_CLAWD_Y = 20
-_DESLOCAMENTO_OVERLAY_Y = -10
 
-# estado -> (prefixo do overlay, a caveira substitui o Clawd?)
+# O overlay é um sprite 64x64. Ampliar para 200 (3,1x) borra tudo com NEAREST e
+# ainda cobre o mascote de 160x129 — era o que o render_bichinhos.py fazia.
+# 128 mantém a proporção legível (2x exato, pixel art sem borrão) e deixa o Clawd
+# aparecer inteiro.
+_TAM_OVERLAY = 128
+_DESLOCAMENTO_CLAWD_Y = 6
+
+# estado -> (prefixo do overlay, esconde o Clawd?, deslocamento Y do overlay)
+# O Y é por estado: a coroa vai na cabeça, o fogo na base, o café ao lado.
 ESTADOS = {
-    "genius": ("halo", False),
-    "smart": ("smart", False),
-    "slow": ("rain", False),
-    "dumb": ("fire", False),
-    "braindead": ("skull", True),
+    "genius": ("halo", False, -28),
+    "smart": ("smart", False, 34),
+    "slow": ("rain", False, -20),
+    "dumb": ("fire", False, 34),
+    "braindead": ("skull", True, 0),
 }
 
 # nomes que o daemon usa -> estado do sprite
@@ -58,7 +63,7 @@ def resolver_estado(nome: str) -> str:
 def compor(nome_estado: str, frame: int = 0) -> Image.Image:
     """Uma tela 240x240: fundo claro + Clawd + overlay do estado."""
     estado = resolver_estado(nome_estado)
-    prefixo, esconde_clawd = ESTADOS[estado]
+    prefixo, esconde_clawd, desloca_y = ESTADOS[estado]
 
     tela = Image.new("RGBA", (TAMANHO, TAMANHO), FUNDO_CLARO + (255,))
 
@@ -77,7 +82,7 @@ def compor(nome_estado: str, frame: int = 0) -> Image.Image:
         overlay,
         (
             (TAMANHO - _TAM_OVERLAY) // 2,
-            (TAMANHO - _TAM_OVERLAY) // 2 + _DESLOCAMENTO_OVERLAY_Y,
+            (TAMANHO - _TAM_OVERLAY) // 2 + desloca_y,
         ),
     )
     return tela.convert("RGB")

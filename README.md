@@ -10,14 +10,26 @@ diretamente e exibe o que a gente quiser: hoje, o mascote **Clawd** do
 que muda conforme o modelo Claude em uso e avisa quando o consumo de tokens
 aperta.
 
-```
-opus   -> Clawd gênio (coroa)      pág. 6
-sonnet -> Clawd esperto (livro)    pág. 7
-fable  -> Clawd no fogo            pág. 5
-```
+## Os bichinhos
 
-Com o consumo em 70–90% o conjunto troca para o de alerta (chuva); acima de 90%,
-fantasminha. A tecla física "Minitela" cicla os três bichinhos do conjunto ativo.
+Conforme o modelo em uso — troca instantânea, só um registrador serial:
+
+| <img src="docs/img/clawd-genius.gif" width="140"> | <img src="docs/img/clawd-smart.gif" width="140"> | <img src="docs/img/clawd-dumb.gif" width="140"> |
+|:---:|:---:|:---:|
+| **opus** — gênio | **sonnet** — esperto | **fable** — no fogo |
+| página 6 | página 7 | página 5 |
+
+Conforme o consumo de tokens — o conjunto inteiro troca (re-upload, ~15s):
+
+| <img src="docs/img/clawd-slow.gif" width="140"> | <img src="docs/img/clawd-braindead.gif" width="140"> |
+|:---:|:---:|
+| **70–90%** — chuva | **≥ 90%** — fantasminha |
+
+A tecla física "Minitela" cicla os três bichinhos do conjunto ativo. Prioridade:
+tecla (override de 20s) > alerta > modelo.
+
+> Os GIFs acima são o render de verdade — a mesma função que gera o que vai para
+> o display. Reproduza com `minitela build normal -o clawd.acf`.
 
 ## Como funciona
 

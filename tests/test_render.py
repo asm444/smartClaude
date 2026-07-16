@@ -64,6 +64,41 @@ class TestComporClawd:
         caveira = luminancia_media(clawd.compor("braindead"))
         assert caveira > com_clawd
 
+    def test_o_overlay_nao_engole_o_mascote(self):
+        """Bug real: o overlay 64x64 era ampliado p/ 200x200 (3,1x, borrado) e
+        cobria o Clawd de 160x129. O mascote precisa sobreviver à composição.
+        """
+        from minitela.render.clawd import _TAM_OVERLAY, _abrir
+
+        clawd_px = _abrir("clawd-160.png").size
+        assert _TAM_OVERLAY < max(clawd_px), (
+            f"overlay {_TAM_OVERLAY}px >= mascote {clawd_px} — vai cobri-lo"
+        )
+
+    def test_o_overlay_amplia_em_multiplo_inteiro(self):
+        """Pixel art esticada em fator quebrado com NEAREST vira borrão."""
+        from minitela.render.clawd import _TAM_OVERLAY, _abrir
+
+        origem = _abrir("fire-0.png").size[0]
+        assert _TAM_OVERLAY % origem == 0, (
+            f"{_TAM_OVERLAY}/{origem} não é inteiro — borra a pixel art"
+        )
+
+    def test_o_clawd_aparece_em_todo_estado_que_nao_e_caveira(self):
+        """O laranja do mascote tem que sobrar na tela depois do overlay."""
+        from minitela.render.comum import LARANJA_CLAWD
+
+        for estado in ["genius", "smart", "slow", "dumb"]:
+            img = clawd.compor(estado)
+            laranja = sum(
+                1
+                for px in img.getdata()
+                if abs(px[0] - LARANJA_CLAWD[0]) < 40
+                and abs(px[1] - LARANJA_CLAWD[1]) < 40
+                and abs(px[2] - LARANJA_CLAWD[2]) < 40
+            )
+            assert laranja > 3000, f"{estado}: só {laranja}px do Clawd — coberto"
+
     def test_sprite_ausente_da_erro_claro(self, monkeypatch, tmp_path):
         monkeypatch.setenv("MINITELA_SPRITES", str(tmp_path))
         with pytest.raises(clawd.SpriteAusente, match="não encontrado"):

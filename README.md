@@ -1,148 +1,152 @@
+**English** · [Português (Brasil)](README.pt-BR.md)
+
 # telinha
 
-Cliente, daemon e pipeline de build para a **Minitela** do notebook
-**Positivo Vision R15M** — um display IPS de 1,54", 240×240, embutido no chassi.
+Client, daemon and build pipeline for the **Minitela** on the **Positivo Vision
+R15M** laptop — a 1.54" IPS display, 240×240, embedded in the chassis.
 
-De fábrica ela só mostra notificações do WhatsApp, clima e fotos, via um app
-fechado da Positivo que não roda no Fedora. Este projeto fala com ela
-diretamente e exibe o que a gente quiser: hoje, o mascote **Clawd** do
+Out of the box it only shows WhatsApp notifications, weather and photos, through
+a closed-source Positivo app that doesn't run on Fedora. This project talks to
+the display directly and shows whatever we want: today, the **Clawd** mascot from
 [claude-usage-widget](https://github.com/MrSchrodingers/claude-usage-widget),
-que muda conforme o modelo Claude em uso e avisa quando o consumo de tokens
-aperta.
+which changes with the Claude model in use and warns when token usage gets tight.
 
-## Os bichinhos
+## The critters
 
-**Pelo modelo em uso** — troca instantânea, só um registrador serial:
+**By the model in use** — instant switch, just one serial register:
 
-![opus, o Clawd gênio de coroa](docs/img/clawd-genius.gif)
-![sonnet, o Clawd esperto com livro e café](docs/img/clawd-smart.gif)
-![fable, o Clawd no fogo](docs/img/clawd-dumb.gif)
+![opus, the genius Clawd with a crown](docs/img/clawd-genius.gif)
+![sonnet, the smart Clawd with a book and coffee](docs/img/clawd-smart.gif)
+![fable, Clawd on fire](docs/img/clawd-dumb.gif)
 
-`opus` → gênio (página 6) · `sonnet` → esperto (página 7) · `fable` → fogo (página 5)
+`opus` → genius (page 6) · `sonnet` → smart (page 7) · `fable` → on fire (page 5)
 
-**Pelo consumo de tokens** — o conjunto inteiro troca (re-upload, ~15s):
+**By token usage** — the whole set swaps (re-upload, ~15s):
 
-![70-90%, o Clawd na chuva](docs/img/clawd-slow.gif)
-![90% ou mais, o fantasminha na lápide](docs/img/clawd-braindead.gif)
+![70-90%, Clawd in the rain](docs/img/clawd-slow.gif)
+![90% or more, the little ghost on a gravestone](docs/img/clawd-braindead.gif)
 
-70–90% → chuva · ≥ 90% → fantasminha
+70–90% → rain · ≥ 90% → little ghost
 
-A tecla física "Minitela" cicla os três bichinhos do conjunto ativo. Prioridade:
-tecla (override de 20s) > alerta > modelo.
+The physical "Minitela" key cycles through the three critters of the active set.
+Priority: key (20s override) > alert > model.
 
-Os GIFs acima são o render de verdade — a mesma função que gera o que vai para o
-display. Reproduza com `minitela build normal -o clawd.acf`.
+The GIFs above are the real render — the same function that generates what goes
+to the display. Reproduce them with `minitela build normal -o clawd.acf`.
 
-## Como funciona
+## How it works
 
-O display roda um firmware **AHMI** com páginas fixas, compiladas. Não dá para
-"desenhar na tela": o que se faz é **recompilar o projeto de fábrica** trocando
-os recursos, subir o `.acf` resultante e trocar a página ativa por um registrador
-serial.
+The display runs an **AHMI** firmware with fixed, compiled pages. You can't
+"draw on the screen": what you do is **recompile the factory project** swapping
+the resources, upload the resulting `.acf`, and switch the active page through a
+serial register.
 
-A descoberta que destrava tudo: **a definição da animação (número de frames,
-delays) vive no firmware**, ligada a cada página de gif. O `.acf` só entrega os
-pixels. Basta trocar o gif de origem por um com o mesmo número de frames.
+The discovery that unlocks everything: **the animation definition (frame count,
+delays) lives in the firmware**, tied to each gif page. The `.acf` only delivers
+pixels. So you just swap the source gif for one with the same frame count.
 
 ```
-sprites  ->  gif (paleta global)  ->  file.zip  ->  AHMISimGenDemo (Wine)  ->  .acf
-                                                                                |
-                                              /dev/ttyACM0  <-  upload (SideCar)
-                                                    |
-                                          show-page 5|6|7  (registrador 2)
+sprites  ->  gif (global palette)  ->  file.zip  ->  AHMISimGenDemo (Wine)  ->  .acf
+                                                                                 |
+                                               /dev/ttyACM0  <-  upload (SideCar)
+                                                     |
+                                           show-page 5|6|7  (register 2)
 ```
 
-**Limite do hardware:** só existem **3 páginas com animação** (5, 6 e 7). Ter 5
-bichinhos animados com troca instantânea é impossível sem re-flash do firmware —
-está provado, não reabra. Ver `docs/`.
+**Hardware limit:** there are only **3 pages with animation** (5, 6 and 7).
+Having 5 animated critters with instant switching is impossible without
+re-flashing the firmware — this is proven, don't reopen it. See `docs/`.
 
-## Instalação
+## Installation
 
 ```bash
-git clone <este-repo> telinha && cd telinha
+git clone <this-repo> telinha && cd telinha
 python3 -m venv .venv
 .venv/bin/pip install -e ".[dev]"
 ```
 
-Dependências de sistema e o material de terceiros (o app da Positivo, o
-compilador AHMI, o SideCar) **não são redistribuídos aqui** — veja
-[`scripts/bootstrap-vendor.md`](scripts/bootstrap-vendor.md) para obtê-los.
+System dependencies and third-party material (the Positivo app, the AHMI
+compiler, SideCar) are **not redistributed here** — see
+[`scripts/bootstrap-vendor.md`](scripts/bootstrap-vendor.md) to obtain them.
 
-Sem esse material você ainda usa o daemon, troca de página e sobe um `.acf`
-pronto. O que exige o material é **gerar um `.acf` novo**.
+Without that material you can still use the daemon, switch pages and upload a
+prebuilt `.acf`. What requires it is **generating a new `.acf`**.
 
-## Uso
+## Usage
 
 ```bash
-minitela handshake                      # o dispositivo responde?
-minitela show-page 6                    # troca a página ativa
-minitela detect-tecla                   # mostra o keycode de cada tecla (root)
-minitela build normal -o clawd-anim.acf # gera o .acf de um conjunto
+minitela handshake                      # does the device answer?
+minitela show-page 6                    # switch the active page
+minitela detect-tecla                   # print the keycode of each key (root)
+minitela build normal -o clawd-anim.acf # build the .acf for a set
 ```
 
-Subir o `.acf` no display (o upload ainda usa o SideCar):
+Uploading the `.acf` to the display (the upload still uses SideCar):
 
 ```bash
-sudo systemctl stop minitela-daemon.service   # evita disputa pelo serial
+sudo systemctl stop minitela-daemon.service   # avoid contention on the serial port
 ./sidecar/SideCar-fixed -mode cli -cmd upload -file clawd-anim.acf \
     -type texture -device /dev/ttyACM0
-sleep 6                                       # o upload ocupa o serial ~6s
+sleep 6                                       # the upload holds the serial for ~6s
 minitela show-page 5
 ```
 
-O daemon (`minitela_clawd.py`) segue o modelo em uso, o alerta de tokens e a
-tecla física. Precisa de root para ler `/dev/input/event*`:
+The daemon (`minitela_clawd.py`) follows the model in use, the token alert and
+the physical key. It needs root to read `/dev/input/event*`:
 
 ```bash
 sudo .venv/bin/python minitela_clawd.py
 ```
 
-## Testes
+## Tests
 
 ```bash
-pytest              # 192 testes, sem hardware, em qualquer máquina
-pytest -m hardware  # exige a Minitela conectada
+pytest              # 192 tests, no hardware, on any machine
+pytest -m hardware  # requires the Minitela connected
 ```
 
-A suite padrão não abre `/dev/ttyACM0` nem `/dev/input/*`: o serial é um
-`socketpair` e a tecla é um `BytesIO` com bytes de `input_event`.
+The default suite opens neither `/dev/ttyACM0` nor `/dev/input/*`: the serial
+port is a `socketpair` and the key is a `BytesIO` with `input_event` bytes.
 
-## Estrutura
+## Layout
 
 ```
 src/minitela/
-├── core/       protocolo (puro), transporte (I/O), dispositivo, páginas
-├── dados/      modelo em uso e consumo de tokens
-├── daemon/     decisão pura: modelo + alerta + tecla -> o que mostrar
-├── entrada/    a tecla física, direto do /dev/input
-├── render/     composição do Clawd (Pillow puro) + sprites vendorizados
-├── build/      gif -> projeto AHMI -> compilador -> .acf
+├── core/       protocol (pure), transport (I/O), device, pages
+├── dados/      model in use and token usage
+├── daemon/     pure decision: model + alert + key -> what to show
+├── entrada/    the physical key, straight from /dev/input
+├── render/     Clawd composition (pure Pillow) + vendored sprites
+├── build/      gif -> AHMI project -> compiler -> .acf
 └── cli.py
 
-patches/sidecar/  nossas correções ao SideCar (3 bugs), sobre o upstream d356c2b
-docs/historico/   as investigações, incluindo as rotas refutadas
+patches/sidecar/  our fixes to SideCar (3 bugs), on top of upstream d356c2b
+docs/historico/   the investigations, including the refuted routes
 ```
 
-Na raiz ainda estão `minitela_clawd.py`, `minitela_daemon.py`, `minitela.py` e
-`minitela_modelo.py` — o daemon legado, que segue no ar. A migração para o pacote
-está planejada e não foi executada; ver "Estado" abaixo.
+The repo root still holds `minitela_clawd.py`, `minitela_daemon.py`,
+`minitela.py` and `minitela_modelo.py` — the legacy daemon, still in production.
+The migration to the package is planned and has not been carried out; see
+"Status" below.
 
-## Estado
+## Status
 
-Funciona no hardware real: bichinho animado, troca por modelo, alerta de tokens
-e tecla física — tudo confirmado no dispositivo.
+It works on real hardware: animated critter, switching by model, token alert and
+physical key — all confirmed on the device.
 
-A reorganização em pacote está **parcial**. O que está pronto: núcleo serial,
-decisão de estado, tecla, render e build, todos com testes. O que falta: migrar
-o daemon e o serviço systemd para o pacote (o legado da raiz ainda é quem roda),
-e reescrever a documentação — o `CLAUDE.md` atual tem contradições conhecidas.
+The reorganization into a package is **partial**. Done: serial core, state
+decision, key input, render and build, all with tests. Missing: migrating the
+daemon and the systemd service to the package (the legacy code at the root is
+still what runs), and rewriting the documentation — the current `CLAUDE.md` has
+known contradictions.
 
-## Licença
+## License
 
-MIT para o código deste repositório. **Não se estende** ao material da
-Positivo/Sigma nem ao SideCar; os sprites do Clawd são MIT do
-claude-usage-widget, redistribuídos com atribuição em
-`src/minitela/render/sprites/LICENSE`. Ver [LICENSE](LICENSE).
+MIT for the code in this repository. It **does not extend** to the
+Positivo/Sigma material nor to SideCar; the Clawd sprites are MIT from
+claude-usage-widget, redistributed with attribution in
+`src/minitela/render/sprites/LICENSE`. See [LICENSE](LICENSE).
 
-O trabalho de engenharia reversa aqui descreve comportamento observado para
-interoperabilidade; não contém nem redistribui código proprietário.
+The reverse engineering work described here documents observed behavior for
+interoperability purposes; it neither contains nor redistributes proprietary
+code.
